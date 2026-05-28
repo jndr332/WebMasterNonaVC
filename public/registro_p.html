@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Check-in · Cursosphe</title>
+  <meta name="theme-color" content="#F7EBDD" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --purple:      #5C2D6E;
+      --purple-mid:  #7B3F8A;
+      --gold:        #C99A2E;
+      --gold-light:  #E8B84B;
+      --rose:        #C47A9E;
+      --green:       #16a34a;
+      --green-soft:  rgba(22,163,74,0.12);
+      --green-border:rgba(22,163,74,0.35);
+      --amber:       #b45309;
+      --amber-soft:  rgba(180,83,9,0.1);
+      --amber-border:rgba(180,83,9,0.32);
+      --red:         #dc2626;
+      --red-soft:    rgba(220,38,38,0.1);
+      --red-border:  rgba(220,38,38,0.32);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      font-family: 'Lato', sans-serif;
+      overflow-x: hidden;
+    }
+
+    body {
+      background: linear-gradient(160deg, #F7EBDD 0%, #EFD9D8 35%, #C9BDD9 68%, #B78FA8 100%);
+      background-attachment: fixed;
+      color: var(--purple);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100dvh;
+      padding: 24px 20px;
+    }
+
+    /* ── Card ────────────────────────────────── */
+    .card {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 420px;
+      background: rgba(255,255,255,0.52);
+      backdrop-filter: blur(32px);
+      -webkit-backdrop-filter: blur(32px);
+      border: 1px solid rgba(92,45,110,0.18);
+      border-radius: 28px;
+      padding: 40px 32px;
+      box-shadow: 0 20px 60px rgba(92,45,110,0.13), inset 0 1px 0 rgba(255,255,255,0.7);
+    }
+
+    /* ── State panels ────────────────────────── */
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* ── Input ───────────────────────────────── */
+    .big-inp {
+      width: 100%;
+      background: rgba(255,255,255,0.7);
+      border: 2px solid rgba(201,154,46,0.38);
+      border-radius: 18px;
+      padding: 20px 22px;
+      font-family: 'Lato', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--purple);
+      letter-spacing: 0.12em;
+      text-align: center;
+      outline: none;
+      transition: border-color 0.3s, box-shadow 0.3s, background 0.3s;
+      -webkit-appearance: none;
+    }
+    .big-inp:focus {
+      border-color: rgba(201,154,46,0.72);
+      background: rgba(255,255,255,0.9);
+      box-shadow: 0 0 0 4px rgba(201,154,46,0.1);
+    }
+    .big-inp::placeholder {
+      color: rgba(92,45,110,0.25);
+      font-weight: 400;
+      font-size: 1rem;
+      letter-spacing: 0;
+    }
+
+    /* ── CTA ─────────────────────────────────── */
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 16px 18px;
+      border-radius: 18px;
+      border: none;
+      font-family: 'Lato', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: transform 0.25s, box-shadow 0.25s;
+    }
+
+    .btn-gold {
+      background: linear-gradient(135deg, var(--gold), var(--gold-light), var(--gold));
+      background-size: 200% 200%;
+      color: #fff;
+      box-shadow: 0 4px 24px rgba(201,154,46,0.38);
+      animation: shimmer 3s ease-in-out infinite;
+    }
+    .btn-gold:hover  { transform: translateY(-3px); box-shadow: 0 8px 32px rgba(201,154,46,0.55); }
+    .btn-gold:active { transform: translateY(-1px); }
+    .btn-gold:disabled { opacity: 0.55; cursor: not-allowed; transform: none; animation: none; }
+
+    @keyframes shimmer {
+      0%,100% { background-position: 0% 50%; }
+      50%      { background-position: 100% 50%; }
+    }
+
+    /* ── Result icons ────────────────────────── */
+    .result-icon {
+      width: 88px;
+      height: 88px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.4rem;
+      margin: 0 auto 22px;
+    }
+
+    .icon-ok   { background: var(--green-soft);  border: 2px solid var(--green-border);  }
+    .icon-warn { background: var(--amber-soft);  border: 2px solid var(--amber-border);  }
+    .icon-err  { background: var(--red-soft);    border: 2px solid var(--red-border);    }
+
+    /* ── Animations ──────────────────────────── */
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.8); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+    @keyframes checkDraw {
+      from { opacity: 0; transform: scale(0.5) rotate(-15deg); }
+      to   { opacity: 1; transform: scale(1) rotate(0deg); }
+    }
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .pop-in    { animation: popIn    0.4s cubic-bezier(0.34,1.56,0.64,1); }
+    .check-anim{ animation: checkDraw 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.1s both; }
+    .card      { animation: cardIn 0.45s cubic-bezier(0.22,1,0.36,1); }
+
+    /* ── Spinner ─────────────────────────────── */
+    .spinner {
+      width: 20px; height: 20px;
+      border: 2px solid rgba(255,255,255,0.35);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Typography ──────────────────────────── */
+    .title  { font-family: 'Playfair Display', serif; }
+    .gold   { color: var(--gold); }
+    .muted  { color: rgba(92,45,110,0.6); font-size: 0.9rem; line-height: 1.65; }
+    .strong-name { color: var(--purple); font-size: 1.1rem; font-weight: 700; }
+
+    /* ── Ghost button ────────────────────────── */
+    .btn-ghost {
+      background: rgba(92,45,110,0.06);
+      border: 1px solid rgba(92,45,110,0.18);
+      color: rgba(92,45,110,0.65);
+      margin-top: 12px;
+      font-size: 0.85rem;
+    }
+    .btn-ghost:hover {
+      background: rgba(92,45,110,0.1);
+      color: var(--purple);
+    }
+
+    /* ── WA button ───────────────────────────── */
+    .btn-wa {
+      background: linear-gradient(135deg, #25D366, #128C7E);
+      color: #fff;
+      margin-top: 12px;
+      box-shadow: 0 4px 18px rgba(37,211,102,0.3);
+    }
+    .btn-wa:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(37,211,102,0.4); }
+
+    /* ── Error msg ───────────────────────────── */
+    .field-err {
+      color: var(--red);
+      font-size: 0.8rem;
+      margin-top: 8px;
+      display: none;
+      text-align: center;
+    }
+
+    /* ── Divider line ────────────────────────── */
+    .divline {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(92,45,110,0.15), transparent);
+      margin: 20px 0;
+    }
+
+    /* ── Logo dot ────────────────────────────── */
+    .logo-dot {
+      width: 52px; height: 52px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--purple-mid, #7B3F8A), var(--gold));
+      box-shadow: 0 0 24px rgba(201,154,46,0.28), 0 0 0 4px rgba(201,154,46,0.1);
+      margin: 0 auto 16px;
+    }
+
+    /* ── Course badge ────────────────────────── */
+    .curso-badge {
+      display: inline-block;
+      padding: 4px 14px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      background: rgba(201,154,46,0.12);
+      border: 1px solid rgba(201,154,46,0.32);
+      color: var(--gold);
+      margin-top: 4px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="card">
+
+  <!-- ── PANEL: Formulario ── -->
+  <div id="p-form" class="panel active">
+
+    <div class="text-center mb-8">
+      <div class="logo-dot"></div>
+      <h1 class="title text-2xl font-semibold mb-1" style="color:var(--purple);">
+        Check-in <em class="gold">Presencial</em>
+      </h1>
+      <p class="muted">Ingresa tu cédula para registrar tu asistencia al evento.</p>
+    </div>
+
+    <form id="checkin-form" novalidate>
+      <label class="block text-xs font-bold uppercase tracking-widest mb-3 text-center"
+             style="color:rgba(201,154,46,0.85);">
+        Número de Cédula / CI
+      </label>
+
+      <input
+        id="inp-cedula"
+        type="tel"
+        inputmode="numeric"
+        pattern="[0-9]*"
+        maxlength="13"
+        placeholder="··············"
+        class="big-inp"
+        autocomplete="off"
+        autofocus
+      />
+      <p class="field-err" id="inp-err">Ingresa tu número de cédula.</p>
+
+      <button type="submit" id="btn-checkin" class="btn btn-gold mt-6">
+        <span id="btn-label">✓ &nbsp;Registrar asistencia</span>
+        <span id="btn-spin" style="display:none;">
+          <span class="spinner"></span>
+        </span>
+      </button>
+    </form>
+
+  </div>
+
+
+  <!-- ── PANEL: Éxito ── -->
+  <div id="p-ok" class="panel">
+    <div class="text-center">
+      <div class="result-icon icon-ok pop-in">
+        <span class="check-anim" style="color:var(--green);">✓</span>
+      </div>
+      <h2 class="title text-2xl font-semibold mb-2" style="color:var(--green);">¡Bienvenido/a!</h2>
+      <p class="strong-name mb-1" id="ok-nombre"></p>
+      <span class="curso-badge" id="ok-curso"></span>
+      <div class="divline"></div>
+      <p class="muted">Tu asistencia fue <strong style="color:var(--green);">registrada exitosamente</strong>. ¡Que disfrutes el evento!</p>
+
+      <button class="btn btn-ghost" onclick="reset()">
+        ← Registrar otra persona
+      </button>
+    </div>
+  </div>
+
+
+  <!-- ── PANEL: Ya registrado ── -->
+  <div id="p-ya" class="panel">
+    <div class="text-center">
+      <div class="result-icon icon-ok pop-in">
+        <span>🌟</span>
+      </div>
+      <h2 class="title text-2xl font-semibold mb-2" style="color:var(--gold);">¡Ya registrado!</h2>
+      <p class="strong-name mb-1" id="ya-nombre"></p>
+      <span class="curso-badge" id="ya-curso"></span>
+      <div class="divline"></div>
+      <p class="muted">Tu asistencia ya estaba registrada. ¡Bienvenido/a de nuevo!</p>
+
+      <button class="btn btn-ghost" onclick="reset()">
+        ← Registrar otra persona
+      </button>
+    </div>
+  </div>
+
+
+  <!-- ── PANEL: Pago pendiente ── -->
+  <div id="p-pago" class="panel">
+    <div class="text-center">
+      <div class="result-icon icon-warn pop-in">
+        <span>⚠️</span>
+      </div>
+      <h2 class="title text-xl font-semibold mb-2" style="color:var(--amber);">Pago Pendiente</h2>
+      <p class="strong-name mb-1" id="pago-nombre"></p>
+      <span class="curso-badge" id="pago-curso"></span>
+      <div class="divline"></div>
+      <p class="muted mb-4">Tu registro está pendiente de pago. Contacta a la organización para completar tu inscripción.</p>
+
+      <button id="btn-pago-wa" class="btn btn-wa">
+        <svg style="width:20px;height:20px;flex-shrink:0;" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+        </svg>
+        Contactar por WhatsApp
+      </button>
+
+      <button class="btn btn-ghost" onclick="reset()">
+        ← Volver
+      </button>
+    </div>
+  </div>
+
+
+  <!-- ── PANEL: No encontrado ── -->
+  <div id="p-nf" class="panel">
+    <div class="text-center">
+      <div class="result-icon icon-err pop-in">
+        <span style="color:var(--red);font-size:2rem;font-weight:700;">✗</span>
+      </div>
+      <h2 class="title text-xl font-semibold mb-2" style="color:var(--red);">No Encontrado</h2>
+      <div class="divline"></div>
+      <p class="muted mb-4">
+        No encontramos tu cédula en el sistema.<br>Verifica el número o regístrate primero en la web.
+      </p>
+      <button class="btn btn-ghost" onclick="reset()">
+        ← Intentar de nuevo
+      </button>
+    </div>
+  </div>
+
+
+  <!-- ── PANEL: Error ── -->
+  <div id="p-err" class="panel">
+    <div class="text-center">
+      <div class="result-icon icon-err pop-in">
+        <span style="color:var(--red);font-size:2rem;font-weight:700;">!</span>
+      </div>
+      <h2 class="title text-xl font-semibold mb-2" style="color:var(--red);">Error de Conexión</h2>
+      <div class="divline"></div>
+      <p class="muted mb-4">
+        No se pudo conectar con el servidor.<br>Verifica tu internet e intenta de nuevo.
+      </p>
+      <button class="btn btn-ghost" onclick="reset()">
+        ← Intentar de nuevo
+      </button>
+    </div>
+  </div>
+
+</div><!-- /card -->
+
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- SCRIPTS                                                       -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<script>
+let WA_NUMBER = '';
+
+fetch('/api/config')
+  .then(r => r.json())
+  .then(d => { WA_NUMBER = d.whatsappNumber || ''; });
+
+/* ── Show panel ─────────────────────────────────────────────────── */
+function showPanel(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+/* ── Reset ──────────────────────────────────────────────────────── */
+function reset() {
+  const inp = document.getElementById('inp-cedula');
+  inp.value = '';
+  document.getElementById('inp-err').style.display = 'none';
+  showPanel('p-form');
+  setTimeout(() => inp.focus(), 100);
+}
+
+/* ── Submit ─────────────────────────────────────────────────────── */
+document.getElementById('checkin-form').addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  const inp     = document.getElementById('inp-cedula');
+  const errEl   = document.getElementById('inp-err');
+  const btnLbl  = document.getElementById('btn-label');
+  const btnSpin = document.getElementById('btn-spin');
+  const btn     = document.getElementById('btn-checkin');
+  const cedula  = inp.value.trim();
+
+  if (!cedula || cedula.length < 5) {
+    errEl.style.display = 'block';
+    inp.focus();
+    return;
+  }
+  errEl.style.display = 'none';
+
+  btnLbl.style.display  = 'none';
+  btnSpin.style.display = 'flex';
+  btn.disabled = true;
+
+  try {
+    const res  = await fetch('/api/checkin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cedula }),
+    });
+    const data = await res.json();
+
+    switch (data.tipo) {
+      case 'exito':
+        document.getElementById('ok-nombre').textContent = data.nombre;
+        document.getElementById('ok-curso').textContent  = data.curso;
+        showPanel('p-ok');
+        break;
+
+      case 'ya_registrado':
+        document.getElementById('ya-nombre').textContent = data.nombre;
+        document.getElementById('ya-curso').textContent  = data.curso;
+        showPanel('p-ya');
+        break;
+
+      case 'pendiente_pago':
+        document.getElementById('pago-nombre').textContent = data.nombre;
+        document.getElementById('pago-curso').textContent  = data.curso;
+        if (WA_NUMBER) {
+          const txt = encodeURIComponent(
+            `Hola, soy ${data.nombre}. Necesito completar mi pago para "${data.curso}".`
+          );
+          document.getElementById('btn-pago-wa').onclick = () => {
+            window.open(`https://wa.me/${WA_NUMBER}?text=${txt}`, '_blank');
+          };
+          document.getElementById('btn-pago-wa').style.display = 'flex';
+        } else {
+          document.getElementById('btn-pago-wa').style.display = 'none';
+        }
+        showPanel('p-pago');
+        break;
+
+      case 'no_encontrado':
+      default:
+        showPanel('p-nf');
+        break;
+    }
+  } catch (_) {
+    showPanel('p-err');
+  } finally {
+    btnLbl.style.display  = 'inline';
+    btnSpin.style.display = 'none';
+    btn.disabled = false;
+  }
+});
+
+/* ── Solo dígitos ───────────────────────────────────────────────── */
+document.getElementById('inp-cedula').addEventListener('keypress', function(e) {
+  if (!/[0-9]/.test(e.key) && !['Backspace','Tab','Enter','ArrowLeft','ArrowRight'].includes(e.key)) {
+    e.preventDefault();
+  }
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin · Cursosphe</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            playfair: ['"Playfair Display"', 'serif'],
+            lato: ['Lato', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    :root {
+      --gold:   #d4af37;
+      --lotus:  #c084fc;
+      --rose:   #f9a8d4;
+      --green:  #4ade80;
+      --red:    #f87171;
+      --bg:     #0d0d14;
+      --surface:#161622;
+      --panel:  #1c1c2e;
+      --border: rgba(255,255,255,0.07);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Lato', sans-serif;
+      background: var(--bg);
+      color: #e2e8f0;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Login Screen ────────────────────────── */
+    #login-screen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(ellipse at 30% 30%, rgba(124,58,237,0.25) 0%, transparent 55%),
+                  radial-gradient(ellipse at 70% 70%, rgba(212,175,55,0.15) 0%, transparent 55%),
+                  linear-gradient(160deg, #0d0d1a 0%, #12102a 100%);
+    }
+
+    .login-card {
+      background: rgba(255,255,255,0.055);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(212,175,55,0.28);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+      border-radius: 24px;
+      padding: 48px 40px;
+      width: 100%;
+      max-width: 380px;
+    }
+
+    /* ── Inputs ──────────────────────────────── */
+    .inp {
+      width: 100%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-family: 'Lato', sans-serif;
+      font-size: 0.95rem;
+      color: #e2e8f0;
+      outline: none;
+      transition: border-color 0.25s, box-shadow 0.25s;
+    }
+    .inp:focus {
+      border-color: rgba(212,175,55,0.6);
+      box-shadow: 0 0 0 3px rgba(212,175,55,0.1);
+    }
+    .inp::placeholder { color: rgba(226,232,240,0.3); }
+
+    /* ── CTA ─────────────────────────────────── */
+    .btn-gold {
+      background: linear-gradient(135deg, var(--gold), #f0d060, var(--gold));
+      background-size: 200% 200%;
+      color: #0d0d14;
+      font-family: 'Lato', sans-serif;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      border: none;
+      cursor: pointer;
+      border-radius: 12px;
+      transition: transform 0.2s, box-shadow 0.2s;
+      animation: shimmer 3s ease-in-out infinite;
+      box-shadow: 0 4px 20px rgba(212,175,55,0.35);
+    }
+    .btn-gold:hover  { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(212,175,55,0.55); }
+    .btn-gold:active { transform: translateY(0); }
+    @keyframes shimmer {
+      0%,100% { background-position: 0% 50%; }
+      50%      { background-position: 100% 50%; }
+    }
+
+    /* ── Sidebar / Nav ───────────────────────── */
+    #app { display: none; min-height: 100vh; }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(13,13,20,0.9);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* ── Stat Cards ──────────────────────────── */
+    .stat-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 24px;
+      transition: transform 0.25s, border-color 0.25s;
+    }
+    .stat-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(212,175,55,0.25);
+    }
+
+    /* ── Table ───────────────────────────────── */
+    .tbl-wrap {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      overflow: hidden;
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+
+    thead th {
+      background: rgba(255,255,255,0.04);
+      padding: 14px 16px;
+      text-align: left;
+      font-family: 'Lato', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(212,175,55,0.7);
+      white-space: nowrap;
+      border-bottom: 1px solid var(--border);
+    }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.2s;
+    }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(255,255,255,0.03); }
+
+    tbody td {
+      padding: 13px 16px;
+      font-family: 'Lato', sans-serif;
+      font-size: 0.85rem;
+      color: #cbd5e1;
+      white-space: nowrap;
+    }
+
+    /* ── Toggle ──────────────────────────────── */
+    .toggle-wrap { display: flex; align-items: center; }
+
+    .toggle {
+      position: relative;
+      width: 42px;
+      height: 24px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-track {
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0.1);
+      border-radius: 999px;
+      transition: background 0.3s;
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+    .toggle input:checked + .toggle-track { background: #22c55e; border-color: #22c55e; }
+    .toggle-thumb {
+      position: absolute;
+      top: 3px; left: 3px;
+      width: 16px; height: 16px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform 0.3s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+    }
+    .toggle input:checked ~ .toggle-thumb { transform: translateX(18px); }
+
+    /* ── Badge ───────────────────────────────── */
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+    }
+
+    /* ── Search ──────────────────────────────── */
+    .search-inp {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 16px 10px 40px;
+      font-family: 'Lato', sans-serif;
+      font-size: 0.9rem;
+      color: #e2e8f0;
+      outline: none;
+      transition: border-color 0.25s;
+      width: 100%;
+      max-width: 320px;
+    }
+    .search-inp:focus { border-color: rgba(212,175,55,0.5); }
+    .search-inp::placeholder { color: rgba(226,232,240,0.3); }
+
+    /* ── Spinner ─────────────────────────────── */
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,0.15);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+      display: inline-block;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Toast ───────────────────────────────── */
+    #toast {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      z-index: 999;
+      padding: 14px 22px;
+      border-radius: 14px;
+      font-family: 'Lato', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      display: none;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      animation: slideUp 0.3s ease;
+      max-width: 320px;
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .toast-ok  { background: #14532d; border: 1px solid #22c55e; color: #86efac; }
+    .toast-err { background: #450a0a; border: 1px solid #f87171; color: #fca5a5; }
+
+    /* ── Empty state ─────────────────────────── */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: rgba(226,232,240,0.35);
+      font-family: 'Lato', sans-serif;
+    }
+
+    /* ── Scrollbar ───────────────────────────── */
+    ::-webkit-scrollbar            { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track      { background: var(--bg); }
+    ::-webkit-scrollbar-thumb      { background: rgba(212,175,55,0.3); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover{ background: rgba(212,175,55,0.5); }
+
+    /* ── Responsive table ────────────────────── */
+    @media (max-width: 900px) {
+      .col-hide { display: none; }
+    }
+    @media (max-width: 640px) {
+      .col-hide-sm { display: none; }
+    }
+
+    /* ── Filter tabs ────────────────────────── */
+    .filter-tab {
+      padding: 5px 12px;
+      border-radius: 8px;
+      font-family: 'Lato', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: rgba(226,232,240,0.45);
+      transition: background 0.18s, border-color 0.18s, color 0.18s;
+      white-space: nowrap;
+    }
+    .filter-tab:hover {
+      background: rgba(255,255,255,0.05);
+      color: rgba(226,232,240,0.8);
+    }
+    .filter-tab.active {
+      background: rgba(212,175,55,0.15);
+      border-color: rgba(212,175,55,0.4);
+      color: #d4af37;
+    }
+
+    /* ── Action buttons ─────────────────────── */
+    .btn-action {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: background 0.18s, border-color 0.18s, transform 0.15s;
+      background: none;
+      padding: 0;
+      flex-shrink: 0;
+    }
+    .btn-action:hover { transform: translateY(-1px); }
+    .btn-action:active { transform: translateY(0); }
+    .btn-action svg { width: 15px; height: 15px; }
+
+    .btn-reminder {
+      color: #fbbf24;
+      border-color: rgba(251,191,36,0.25);
+    }
+    .btn-reminder:hover {
+      background: rgba(251,191,36,0.12);
+      border-color: rgba(251,191,36,0.5);
+    }
+
+    .btn-edit-email {
+      color: #60a5fa;
+      border-color: rgba(96,165,250,0.25);
+    }
+    .btn-edit-email:hover {
+      background: rgba(96,165,250,0.1);
+      border-color: rgba(96,165,250,0.5);
+    }
+
+    /* ── Modal ───────────────────────────────── */
+    #modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.65);
+      backdrop-filter: blur(6px);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+    }
+    #modal-backdrop.open { display: flex; }
+
+    .modal-card {
+      background: var(--panel);
+      border: 1px solid rgba(212,175,55,0.28);
+      border-radius: 20px;
+      padding: 36px 32px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.7);
+      animation: modalIn 0.25s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(0.88) translateY(12px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    /* ── Bulk reminder button ────────────────── */
+    .btn-bulk {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 18px;
+      border-radius: 10px;
+      font-family: 'Lato', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      border: 1px solid rgba(251,191,36,0.35);
+      background: rgba(251,191,36,0.1);
+      color: #fbbf24;
+      transition: background 0.2s, border-color 0.2s, transform 0.15s;
+    }
+    .btn-bulk:hover {
+      background: rgba(251,191,36,0.18);
+      border-color: rgba(251,191,36,0.6);
+      transform: translateY(-1px);
+    }
+    .btn-bulk:active { transform: translateY(0); }
+    .btn-bulk:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- LOGIN SCREEN                                                  -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<div id="login-screen">
+  <div class="login-card">
+    <!-- Logo -->
+    <div class="text-center mb-8">
+      <div class="w-12 h-12 rounded-full mx-auto mb-4"
+           style="background:linear-gradient(135deg,#c084fc,#d4af37);box-shadow:0 0 20px rgba(212,175,55,0.3);"></div>
+      <p class="font-playfair text-xl" style="color:var(--gold);">Máster Nona</p>
+      <p class="font-lato text-xs mt-1" style="color:rgba(226,232,240,0.4);">Panel de Administración</p>
+    </div>
+
+    <form id="login-form" novalidate class="space-y-4">
+      <div>
+        <label class="block font-lato text-xs font-bold mb-2 uppercase tracking-wider"
+               style="color:rgba(212,175,55,0.75);">Contraseña</label>
+        <input type="password" id="login-pass" class="inp"
+               placeholder="••••••••••" autocomplete="current-password" />
+        <p id="login-err" class="hidden mt-2 text-xs font-lato" style="color:var(--red);">
+          Contraseña incorrecta.
+        </p>
+      </div>
+      <button type="submit" class="btn-gold w-full py-3 text-sm mt-2">
+        Ingresar al panel
+      </button>
+    </form>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- APP                                                           -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<div id="app">
+
+  <!-- TOP BAR -->
+  <header class="topbar px-6 py-4 flex items-center justify-between gap-4">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-full flex-shrink-0"
+           style="background:linear-gradient(135deg,#c084fc,#d4af37);"></div>
+      <div>
+        <p class="font-playfair text-base leading-none" style="color:var(--gold);">Máster Nona</p>
+        <p class="font-lato text-xs" style="color:rgba(226,232,240,0.4);">Panel Admin</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <button id="btn-refresh"
+              class="flex items-center gap-2 px-4 py-2 rounded-xl font-lato text-xs font-bold transition-all hover:bg-white/5"
+              style="border:1px solid var(--border);color:rgba(226,232,240,0.6);">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        </svg>
+        Actualizar
+      </button>
+      <button id="btn-logout"
+              class="px-4 py-2 rounded-xl font-lato text-xs font-bold transition-all hover:bg-white/5"
+              style="border:1px solid var(--border);color:rgba(226,232,240,0.5);">
+        Salir
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="px-6 py-8 max-w-7xl mx-auto space-y-8">
+
+    <!-- ── Stat Cards ── -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+
+      <div class="stat-card">
+        <p class="font-lato text-xs uppercase tracking-wider mb-3" style="color:rgba(212,175,55,0.6);">Total Registrados</p>
+        <p id="stat-total" class="font-playfair text-4xl font-semibold" style="color:#f3e8ff;">—</p>
+        <p class="font-lato text-xs mt-2" style="color:rgba(226,232,240,0.4);">inscripciones</p>
+      </div>
+
+      <div class="stat-card">
+        <p class="font-lato text-xs uppercase tracking-wider mb-3" style="color:rgba(74,222,128,0.7);">Total Pagados</p>
+        <p id="stat-pagados" class="font-playfair text-4xl font-semibold" style="color:#4ade80;">—</p>
+        <p class="font-lato text-xs mt-2" style="color:rgba(226,232,240,0.4);">pago confirmado</p>
+      </div>
+
+      <div class="stat-card">
+        <p class="font-lato text-xs uppercase tracking-wider mb-3" style="color:rgba(251,191,36,0.7);">Total Pendientes</p>
+        <p id="stat-pendientes" class="font-playfair text-4xl font-semibold" style="color:#fbbf24;">—</p>
+        <p class="font-lato text-xs mt-2" style="color:rgba(226,232,240,0.4);">sin pago aún</p>
+      </div>
+
+      <div class="stat-card">
+        <p class="font-lato text-xs uppercase tracking-wider mb-3" style="color:rgba(192,132,252,0.7);">Presentes</p>
+        <p id="stat-presentes" class="font-playfair text-4xl font-semibold" style="color:#c084fc;">—</p>
+        <p class="font-lato text-xs mt-2" style="color:rgba(226,232,240,0.4);">en sala</p>
+      </div>
+
+    </div>
+
+    <!-- ── Table section ── -->
+    <div class="tbl-wrap">
+
+      <!-- Table header bar -->
+      <div class="flex flex-wrap items-center justify-between gap-4 px-6 py-5 border-b"
+           style="border-color:var(--border);">
+        <div class="flex flex-wrap items-center gap-3">
+          <h2 class="font-playfair text-lg" style="color:#f3e8ff;">
+            Inscripciones <span id="tbl-count" class="font-lato text-sm" style="color:rgba(226,232,240,0.4);font-style:normal;"></span>
+          </h2>
+
+          <!-- Filtro por evento -->
+          <div class="flex flex-wrap gap-1.5" id="filter-tabs">
+            <button class="filter-tab active" data-filter="all">Todos</button>
+            <button class="filter-tab" data-filter="Om Mani">🪷 Om Mani</button>
+            <button class="filter-tab" data-filter="Ángeles">✨ Ángeles</button>
+            <button class="filter-tab" data-filter="Ambos">🌟 Ambos</button>
+            <button class="filter-tab" data-filter="Homenaje">🎂 Homenaje</button>
+            <button class="filter-tab" data-filter="3 Eventos">🌟🎂 3 Eventos</button>
+          </div>
+        </div>
+
+        <!-- Right controls -->
+        <div class="flex flex-wrap items-center gap-3">
+          <!-- Bulk reminder -->
+          <button id="btn-bulk-reminder" class="btn-bulk" title="Enviar recordatorio a todos los pendientes de pago">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:14px;height:14px;">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+            </svg>
+            Recordar a pendientes
+          </button>
+
+          <!-- Search -->
+          <div class="relative">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
+                 style="color:rgba(226,232,240,0.3);"
+                 fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            </svg>
+            <input id="search" type="text" class="search-inp"
+                   placeholder="Buscar por nombre o cédula…" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <div id="tbl-loading" class="py-16 text-center">
+        <span class="spinner"></span>
+        <p class="font-lato text-sm mt-4" style="color:rgba(226,232,240,0.4);">Cargando datos…</p>
+      </div>
+
+      <!-- Table -->
+      <div id="tbl-wrap" class="hidden overflow-x-auto">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Nombre</th>
+              <th class="col-hide-sm">Correo</th>
+              <th class="col-hide">Celular</th>
+              <th>Cédula</th>
+              <th>Curso</th>
+              <th>Registro</th>
+              <th style="text-align:center;">Pagado</th>
+              <th class="col-hide" style="text-align:center;">Asistencia</th>
+              <th style="text-align:center;">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tbl-body"></tbody>
+        </table>
+        <div id="tbl-empty" class="empty-state hidden">
+          <div class="text-4xl mb-3">🔍</div>
+          <p>No se encontraron resultados.</p>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+
+<!-- Toast -->
+<div id="toast" class="hidden"></div>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- MODAL: Editar correo                                          -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<div id="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal-card">
+    <div class="flex items-center justify-between mb-6">
+      <p id="modal-title" class="font-playfair text-lg" style="color:var(--gold);">Editar correo</p>
+      <button id="modal-close"
+              class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors"
+              style="color:rgba(226,232,240,0.5);">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <p id="modal-subtitle" class="font-lato text-sm mb-4" style="color:rgba(226,232,240,0.5);"></p>
+
+    <label class="block font-lato text-xs font-bold mb-2 uppercase tracking-wider"
+           style="color:rgba(212,175,55,0.75);">Nuevo correo</label>
+    <input type="email" id="modal-email" class="inp" placeholder="nuevo@correo.com" autocomplete="off" />
+    <p id="modal-err" class="hidden mt-2 text-xs font-lato" style="color:var(--red);">Ingresa un correo válido.</p>
+
+    <div class="flex gap-3 mt-6">
+      <button id="modal-cancel"
+              class="flex-1 py-2.5 rounded-xl font-lato text-sm font-bold transition-all hover:bg-white/5"
+              style="border:1px solid var(--border);color:rgba(226,232,240,0.5);">
+        Cancelar
+      </button>
+      <button id="modal-save" class="btn-gold flex-1 py-2.5 text-sm">
+        Guardar correo
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- SCRIPTS                                                       -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<script>
+/* ── State ─────────────────────────────────────────────────────── */
+let SESSION_PASS   = '';
+let ALL_ROWS       = [];
+let ACTIVE_FILTER  = 'all';
+let SEARCH_QUERY   = '';
+
+/* ── Login ─────────────────────────────────────────────────────── */
+document.getElementById('login-form').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const pass = document.getElementById('login-pass').value;
+  const err  = document.getElementById('login-err');
+  err.classList.add('hidden');
+
+  try {
+    const res  = await fetch('/api/admin/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pass }),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      SESSION_PASS = pass;
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      loadData();
+    } else {
+      err.classList.remove('hidden');
+    }
+  } catch (_) {
+    err.textContent = 'Error de conexión.';
+    err.classList.remove('hidden');
+  }
+});
+
+document.getElementById('btn-logout').addEventListener('click', () => {
+  SESSION_PASS = '';
+  ALL_ROWS = [];
+  document.getElementById('login-pass').value = '';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+});
+
+/* ── Load data ─────────────────────────────────────────────────── */
+async function loadData() {
+  document.getElementById('tbl-loading').classList.remove('hidden');
+  document.getElementById('tbl-wrap').classList.add('hidden');
+
+  try {
+    const res  = await fetch('/api/admin/inscripciones', {
+      headers: { password: SESSION_PASS },
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error();
+
+    ALL_ROWS = data.inscripciones;
+
+    // Stats
+    document.getElementById('stat-total').textContent     = data.stats.total;
+    document.getElementById('stat-pagados').textContent   = data.stats.pagados;
+    document.getElementById('stat-pendientes').textContent= data.stats.pendientes;
+    document.getElementById('stat-presentes').textContent = data.stats.presentes;
+
+    renderTable(ALL_ROWS);
+  } catch (_) {
+    toast('Error al cargar los datos.', false);
+  } finally {
+    document.getElementById('tbl-loading').classList.add('hidden');
+    document.getElementById('tbl-wrap').classList.remove('hidden');
+  }
+}
+
+document.getElementById('btn-refresh').addEventListener('click', loadData);
+
+/* ── Render table ──────────────────────────────────────────────── */
+function cursoTag(curso) {
+  // ⚠️ Orden importa: de más específico a más general
+  if (curso.includes('3 Eventos'))  return `<span class="badge" style="background:rgba(251,191,36,0.18);color:#fbbf24;border:1px solid rgba(251,191,36,0.45);">🌟🎂 3 Eventos</span>`;
+  if (curso.includes('Ambos'))      return `<span class="badge" style="background:rgba(251,191,36,0.14);color:#fbbf24;border:1px solid rgba(251,191,36,0.35);">🌟 Ambos Cursos</span>`;
+  if (curso.startsWith('Homenaje')) return `<span class="badge" style="background:rgba(212,175,55,0.1);color:#d4af37;border:1px solid rgba(212,175,55,0.3);">🎂 Homenaje</span>`;
+  if (curso.includes('Ángeles'))    return `<span class="badge" style="background:rgba(192,132,252,0.14);color:#c084fc;border:1px solid rgba(192,132,252,0.35);">✨ Ángeles</span>`;
+  if (curso.includes('Om Mani'))    return `<span class="badge" style="background:rgba(249,168,212,0.14);color:#f9a8d4;border:1px solid rgba(249,168,212,0.35);">🪷 Om Mani</span>`;
+  return `<span class="badge" style="background:rgba(226,232,240,0.08);color:rgba(226,232,240,0.55);border:1px solid rgba(226,232,240,0.15);">${esc(curso)}</span>`;
+}
+
+function formatDate(dt) {
+  if (!dt) return '—';
+  const d = new Date(dt.replace(' ', 'T'));
+  return isNaN(d) ? dt : d.toLocaleDateString('es-EC', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
+}
+
+function renderTable(rows) {
+  const body  = document.getElementById('tbl-body');
+  const empty = document.getElementById('tbl-empty');
+  const count = document.getElementById('tbl-count');
+
+  count.textContent = rows.length ? `· ${rows.length}` : '';
+
+  if (!rows.length) {
+    body.innerHTML = '';
+    empty.classList.remove('hidden');
+    return;
+  }
+  empty.classList.add('hidden');
+
+  body.innerHTML = rows.map((r) => `
+    <tr data-id="${r.id}">
+      <td style="color:rgba(226,232,240,0.35);font-size:0.75rem;">${r.id}</td>
+      <td>
+        <div class="font-bold" style="color:#f3e8ff;">${esc(r.nombre)}</div>
+      </td>
+      <td class="col-hide-sm">
+        <span id="correo-${r.id}" style="color:rgba(226,232,240,0.6);">${esc(r.correo)}</span>
+      </td>
+      <td class="col-hide" style="color:rgba(226,232,240,0.6);">${esc(r.celular)}</td>
+      <td style="font-family:monospace;color:rgba(226,232,240,0.7);">${esc(r.cedula)}</td>
+      <td>${cursoTag(r.curso)}</td>
+      <td class="col-hide" style="color:rgba(226,232,240,0.5);font-size:0.78rem;">${formatDate(r.created_at)}</td>
+      <td style="text-align:center;">
+        <label class="toggle" title="${r.estado_pago ? 'Marcar como pendiente' : 'Marcar como pagado'}">
+          <input type="checkbox" class="pago-toggle" data-id="${r.id}" ${r.estado_pago ? 'checked' : ''} />
+          <span class="toggle-track"></span>
+          <span class="toggle-thumb"></span>
+        </label>
+      </td>
+      <td class="col-hide" style="text-align:center;">
+        ${r.asistencia
+          ? '<span class="badge" style="background:rgba(74,222,128,0.14);color:#4ade80;border:1px solid rgba(74,222,128,0.35);">✔ Presente</span>'
+          : '<span style="color:rgba(226,232,240,0.25);font-size:0.78rem;">—</span>'
+        }
+      </td>
+      <td style="text-align:center;">
+        <div style="display:inline-flex;align-items:center;gap:6px;">
+          <!-- Edit email -->
+          <button class="btn-action btn-edit-email"
+                  title="Editar correo"
+                  onclick="openEditModal(${r.id}, '${esc(r.correo)}', '${esc(r.nombre)}')">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M16.862 3.487a2.25 2.25 0 013.182 3.182L6.75 19.963l-4.5 1.125 1.125-4.5L16.862 3.487z"/>
+            </svg>
+          </button>
+          <!-- Send reminder (only unpaid) -->
+          ${!r.estado_pago ? `
+          <button class="btn-action btn-reminder"
+                  title="Enviar recordatorio de pago"
+                  onclick="sendRecordatorio(${r.id}, this)">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+            </svg>
+          </button>` : `
+          <span style="width:30px;display:inline-block;"></span>`}
+        </div>
+      </td>
+    </tr>
+  `).join('');
+
+  // Bind toggles
+  body.querySelectorAll('.pago-toggle').forEach(chk => {
+    chk.addEventListener('change', () => togglePago(chk));
+  });
+}
+
+/* ── Toggle pago ───────────────────────────────────────────────── */
+async function togglePago(chk) {
+  const id   = chk.dataset.id;
+  const val  = chk.checked;
+  chk.disabled = true;
+
+  try {
+    const res  = await fetch(`/api/admin/inscripciones/${id}/pago`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', password: SESSION_PASS },
+      body: JSON.stringify({ estado_pago: val }),
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error();
+
+    // Update local state
+    const row = ALL_ROWS.find(r => r.id == id);
+    if (row) row.estado_pago = val ? 1 : 0;
+
+    // Recompute stats
+    const pagados    = ALL_ROWS.filter(r => r.estado_pago).length;
+    const pendientes = ALL_ROWS.length - pagados;
+    document.getElementById('stat-pagados').textContent    = pagados;
+    document.getElementById('stat-pendientes').textContent = pendientes;
+
+    toast(val ? '✅ Marcado como pagado · Correo enviado' : '🔄 Marcado como pendiente', val);
+  } catch (_) {
+    chk.checked = !val;
+    toast('Error al actualizar. Intenta de nuevo.', false);
+  } finally {
+    chk.disabled = false;
+  }
+}
+
+/* ── Filter + Search (combinados) ──────────────────────────────── */
+function applyFilters() {
+  let rows = ALL_ROWS;
+
+  // Filtro por evento
+  if (ACTIVE_FILTER !== 'all') {
+    rows = rows.filter(r => r.curso.includes(ACTIVE_FILTER));
+  }
+
+  // Búsqueda de texto
+  if (SEARCH_QUERY) {
+    rows = rows.filter(r =>
+      r.nombre.toLowerCase().includes(SEARCH_QUERY) ||
+      r.cedula.toLowerCase().includes(SEARCH_QUERY) ||
+      r.correo.toLowerCase().includes(SEARCH_QUERY)
+    );
+  }
+
+  renderTable(rows);
+}
+
+// Filter tabs
+document.getElementById('filter-tabs').addEventListener('click', function(e) {
+  const btn = e.target.closest('.filter-tab');
+  if (!btn) return;
+  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  ACTIVE_FILTER = btn.dataset.filter;
+  applyFilters();
+});
+
+// Search input
+document.getElementById('search').addEventListener('input', function() {
+  SEARCH_QUERY = this.value.trim().toLowerCase();
+  applyFilters();
+});
+
+/* ── Toast ─────────────────────────────────────────────────────── */
+let toastTimer;
+function toast(msg, ok = true) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className   = ok ? 'toast-ok' : 'toast-err';
+  el.style.display = 'flex';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.style.display = 'none'; }, 3500);
+}
+
+/* ── XSS safe ──────────────────────────────────────────────────── */
+function esc(str) {
+  return String(str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ── Send reminder (individual) ────────────────────────────────── */
+async function sendRecordatorio(id, btn) {
+  if (!confirm('¿Enviar recordatorio de pago a esta persona?')) return;
+  btn.disabled = true;
+  btn.style.opacity = '0.4';
+
+  try {
+    const res  = await fetch(`/api/admin/inscripciones/${id}/recordatorio`, {
+      method: 'POST',
+      headers: { password: SESSION_PASS },
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.mensaje || 'Error');
+    toast('📬 ' + data.mensaje, true);
+  } catch (err) {
+    toast('Error: ' + err.message, false);
+    btn.disabled = false;
+    btn.style.opacity = '1';
+  }
+}
+
+/* ── Send reminders (bulk: all unpaid) ─────────────────────────── */
+document.getElementById('btn-bulk-reminder').addEventListener('click', async function() {
+  const pendientes = ALL_ROWS.filter(r => !r.estado_pago);
+  if (!pendientes.length) {
+    toast('No hay registros pendientes de pago.', false);
+    return;
+  }
+  if (!confirm(`¿Enviar recordatorio a ${pendientes.length} persona(s) con pago pendiente?`)) return;
+
+  const btn = this;
+  btn.disabled = true;
+  btn.textContent = 'Enviando…';
+
+  let ok = 0, fail = 0;
+  for (const r of pendientes) {
+    try {
+      const res = await fetch(`/api/admin/inscripciones/${r.id}/recordatorio`, {
+        method: 'POST',
+        headers: { password: SESSION_PASS },
+      });
+      const data = await res.json();
+      if (data.ok) ok++; else fail++;
+    } catch (_) { fail++; }
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = `<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:14px;height:14px;"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg> Recordar a pendientes`;
+
+  const msg = ok ? `📬 ${ok} recordatorio(s) enviado(s)${fail ? ` · ${fail} error(es)` : ''}.` : `Error al enviar recordatorios.`;
+  toast(msg, ok > 0);
+});
+
+/* ── Edit email modal ──────────────────────────────────────────── */
+let EDIT_ID = null;
+
+function openEditModal(id, correoActual, nombre) {
+  EDIT_ID = id;
+  document.getElementById('modal-subtitle').textContent = `Registro de: ${nombre}`;
+  document.getElementById('modal-email').value = correoActual;
+  document.getElementById('modal-err').classList.add('hidden');
+  document.getElementById('modal-backdrop').classList.add('open');
+  setTimeout(() => document.getElementById('modal-email').focus(), 120);
+}
+
+function closeModal() {
+  document.getElementById('modal-backdrop').classList.remove('open');
+  EDIT_ID = null;
+}
+
+document.getElementById('modal-close').addEventListener('click', closeModal);
+document.getElementById('modal-cancel').addEventListener('click', closeModal);
+document.getElementById('modal-backdrop').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+document.getElementById('modal-save').addEventListener('click', async function() {
+  const correo = document.getElementById('modal-email').value.trim();
+  const errEl  = document.getElementById('modal-err');
+
+  // Client-side validation
+  if (!correo || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) {
+    errEl.classList.remove('hidden');
+    document.getElementById('modal-email').focus();
+    return;
+  }
+  errEl.classList.add('hidden');
+
+  this.disabled = true;
+  this.textContent = 'Guardando…';
+
+  try {
+    const res  = await fetch(`/api/admin/inscripciones/${EDIT_ID}/correo`, {
+      method:  'PUT',
+      headers: { 'Content-Type': 'application/json', password: SESSION_PASS },
+      body:    JSON.stringify({ correo }),
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.mensaje || 'Error');
+
+    // Update local state
+    const row = ALL_ROWS.find(r => r.id == EDIT_ID);
+    if (row) row.correo = data.correo;
+
+    // Update displayed cell without re-rendering the whole table
+    const cell = document.getElementById(`correo-${EDIT_ID}`);
+    if (cell) cell.textContent = data.correo;
+
+    toast('✅ Correo actualizado correctamente.', true);
+    closeModal();
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.classList.remove('hidden');
+  } finally {
+    this.disabled = false;
+    this.textContent = 'Guardar correo';
+  }
+});
+
+// Allow Enter key to submit modal
+document.getElementById('modal-email').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') document.getElementById('modal-save').click();
+  if (e.key === 'Escape') closeModal();
+});
+</script>
+
+</body>
+</html>
